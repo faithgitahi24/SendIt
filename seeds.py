@@ -1,62 +1,143 @@
-from database.session import (
-    create_db_and_tables,
-    engine
-)
+from sqlmodel import Session, select
 
-from sqlmodel import Session
+# Import BOTH models so SQLModel registers relationships
+from models.user import User
+from models.document import Document
+
+from database.session import (
+    engine,
+    create_db_and_tables
+)
 
 from models.user import User
 
 from auth import hash_password
 
 
-def seed():
+def create_users():
 
+    # Make sure tables exist
     create_db_and_tables()
+
 
     with Session(engine) as session:
 
-        admin = session.query(User).filter(
-            User.username == "admin"
+        # Check if admin already exists
+        existing_admin = session.exec(
+
+            select(User).where(
+
+                User.username
+                == "admin"
+
+            )
+
         ).first()
 
-        if admin:
 
-            print("Admin already exists")
-            return
+        if not existing_admin:
 
-        admin = User(
-            username="admin",
-            email="admin@sendit.com",
-            full_name="System Administrator",
-            hashed_password=hash_password("admin123"),
-            role="admin"
-        )
+            admin = User(
 
-        manager = User(
-            username="manager",
-            email="manager@sendit.com",
-            full_name="System Manager",
-            hashed_password=hash_password("manager123"),
-            role="manager"
-        )
+                username="admin",
 
-        staff = User(
-            username="staff",
-            email="staff@sendit.com",
-            full_name="Staff User",
-            hashed_password=hash_password("staff123"),
-            role="staff"
-        )
+                email="admin@sendit.com",
 
-        session.add(admin)
-        session.add(manager)
-        session.add(staff)
+                hashed_password=hash_password(
+                    "Admin123!"
+                ),
+
+                full_name="System Administrator",
+
+                role="admin"
+
+            )
+
+            session.add(
+                admin
+            )
+
+
+        # Check manager
+        existing_manager = session.exec(
+
+            select(User).where(
+
+                User.username
+                == "manager"
+
+            )
+
+        ).first()
+
+
+        if not existing_manager:
+
+            manager = User(
+
+                username="manager",
+
+                email="manager@sendit.com",
+
+                hashed_password=hash_password(
+                    "Manager123!"
+                ),
+
+                full_name="SendIt Manager",
+
+                role="manager"
+
+            )
+
+            session.add(
+                manager
+            )
+
+
+        # Check staff
+        existing_staff = session.exec(
+
+            select(User).where(
+
+                User.username
+                == "staff"
+
+            )
+
+        ).first()
+
+
+        if not existing_staff:
+
+            staff = User(
+
+                username="staff",
+
+                email="staff@sendit.com",
+
+                hashed_password=hash_password(
+                    "Staff123!"
+                ),
+
+                full_name="SendIt Staff",
+
+                role="staff"
+
+            )
+
+            session.add(
+                staff
+            )
+
 
         session.commit()
 
-        print("Database seeded successfully")
+
+        print(
+            "Users created successfully!"
+        )
 
 
 if __name__ == "__main__":
-    seed()
+
+    create_users()

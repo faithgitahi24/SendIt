@@ -25,6 +25,8 @@ class Document(SQLModel, table=True):
         default="uploaded"
     )
 
+    version: int = Field(default=1)
+
     city: str = Field(
         index=True
     )
